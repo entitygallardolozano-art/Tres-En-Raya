@@ -1,360 +1,379 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <link rel="manifest" href="manifest.json">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Tres en Raya Liquid Glass (Offline)</title>
+    <title>Tres en Raya Pro | Liquid Glass</title>
     <style>
-        /* --- VARIABLES --- */
+        /* --- VARIABLES GLOBALES --- */
         :root {
-            --glass-bg: rgba(255, 255, 255, 0.1);
-            --glass-border: rgba(255, 255, 255, 0.15);
-            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-            --color-x: #00d2ff;
-            --color-o: #ff007f;
-            --color-text: #ffffff;
-            --color-text-muted: rgba(255, 255, 255, 0.6);
+            --neon-cyan: #00f0ff;
+            --neon-pink: #ff0055;
+            --glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
+            --glass-border: rgba(255, 255, 255, 0.2);
+            /* Sombra interna para el efecto 3D del borde del cristal */
+            --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+            --glass-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.4);
         }
 
         /* --- RESET Y ESTRUCTURA BASE --- */
         * {
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
-        }
-
-        html, body {
-            height: 100%;
-            width: 100%;
             margin: 0;
             padding: 0;
-            overflow: hidden;
-            /* Usa las fuentes nativas de Apple (San Francisco) sin descargar nada */
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-            background-color: #050505;
-            color: var(--color-text);
-            touch-action: none;
         }
 
-        body {
+        body, html {
+            width: 100vw;
+            height: 100dvh; /* Altura dinámica perfecta para móviles */
+            overflow: hidden;
+            background-color: #030305;
+            /* Pila de fuentes del sistema (Usa San Francisco en Apple) */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: white;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: space-between;
-            padding-top: env(safe-area-inset-top);
-            padding-bottom: env(safe-area-inset-bottom);
+            touch-action: none; /* Bloquea todo scroll/zoom nativo */
         }
 
-        /* --- FONDO LÍQUIDO --- */
-        .liquid-bg {
+        /* --- FONDO DE PLASMA ANIMADO --- */
+        .plasma-bg {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0; left: 0; right: 0; bottom: 0;
             z-index: 0;
-            background: #0f0c29;
             overflow: hidden;
+            background: radial-gradient(circle at center, #1a0b2e 0%, #030305 100%);
         }
 
         .orb {
             position: absolute;
             border-radius: 50%;
-            filter: blur(60px);
-            opacity: 0.6;
-            animation: float 20s infinite ease-in-out alternate;
+            filter: blur(80px);
+            mix-blend-mode: screen;
+            animation: drift 25s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0.7;
         }
 
         .orb-1 {
-            width: 70vw; height: 70vw; max-width: 300px; max-height: 300px;
-            background: var(--color-o);
-            top: -10%; left: -10%;
+            width: 80vw; height: 80vw;
+            background: #ff0055;
+            top: -20%; left: -20%;
         }
 
         .orb-2 {
-            width: 80vw; height: 80vw; max-width: 350px; max-height: 350px;
-            background: var(--color-x);
-            bottom: -10%; right: -10%;
-            animation-delay: -5s;
+            width: 90vw; height: 90vw;
+            background: #0055ff;
+            bottom: -20%; right: -20%;
+            animation-delay: -7s;
             animation-direction: alternate-reverse;
         }
 
-        @keyframes float {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(15px, -25px) scale(1.05); }
-            100% { transform: translate(-15px, 15px) scale(0.95); }
+        .orb-3 {
+            width: 60vw; height: 60vw;
+            background: #00f0ff;
+            top: 40%; left: 20%;
+            animation-delay: -14s;
+        }
+
+        @keyframes drift {
+            0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+            50% { transform: translate(15vw, -15vh) scale(1.1) rotate(180deg); }
+            100% { transform: translate(-15vw, 15vh) scale(0.9) rotate(360deg); }
         }
 
         /* --- LAYOUT PRINCIPAL --- */
-        .container {
+        .app-container {
+            position: relative;
+            z-index: 10;
             width: 90vw;
-            max-width: 380px;
+            max-width: 420px;
             height: 100%;
             display: flex;
             flex-direction: column;
+            justify-content: center; /* Centrado vertical perfecto */
             align-items: center;
-            justify-content: space-evenly;
-            position: relative;
-            z-index: 10;
-            padding: 24px 0;
+            gap: 6vh; /* Espaciado dinámico proporcional a la altura de la pantalla */
+            /* Respeta los márgenes seguros de iOS (Notch y barra de inicio) */
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
         }
 
-        /* --- UTILIDADES APPLE GLASS --- */
-        .apple-glass {
+        /* --- EFECTO CRISTAL PREMIUM (APPLE GLASS) --- */
+        .glass-panel {
             background: var(--glass-bg);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
             border: 1px solid var(--glass-border);
-            box-shadow: var(--glass-shadow);
+            box-shadow: var(--glass-shadow), var(--glass-highlight);
+            border-radius: 32px;
         }
 
         /* --- CABECERA --- */
         .header {
-            text-align: center;
-            flex-shrink: 0;
+            display: none; /* Ocultamos la cabecera por completo para no dejar espacios en blanco */
         }
 
         .title {
-            font-size: 1.875rem; /* 30px */
+            font-size: 2.2rem;
             font-weight: 800;
-            letter-spacing: -0.025em;
-            margin: 0 0 4px 0;
-            background: linear-gradient(135deg, #fff 0%, #b3b3b3 100%);
+            letter-spacing: -0.04em;
+            background: linear-gradient(135deg, #fff 20%, #a0a0a0 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+            filter: drop-shadow(0 2px 10px rgba(255,255,255,0.1));
         }
 
         .subtitle {
-            color: var(--color-text-muted);
-            font-size: 0.75rem; /* 12px */
-            font-weight: 600;
-            letter-spacing: 0.1em;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.3em;
             text-transform: uppercase;
-            margin: 0;
+            color: rgba(255, 255, 255, 0.5);
         }
 
-        /* --- PANEL DE PUNTUACIÓN --- */
-        .score-section {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            flex-shrink: 0;
-        }
-
+        /* --- MARCADOR --- */
         .score-board {
             width: 100%;
-            border-radius: 24px;
-            padding: 12px 20px;
+            padding: 20px 28px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            opacity: 0;
+            transform: translateY(-20px);
+            animation: slideDown 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards 0.2s;
         }
 
-        .score-player {
+        .score-col {
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 64px;
+            width: 70px;
         }
 
-        .score-symbol-x { color: var(--color-x); font-weight: 700; font-size: 1.125rem; margin-bottom: 2px; }
-        .score-symbol-o { color: var(--color-o); font-weight: 700; font-size: 1.125rem; margin-bottom: 2px; }
-        .score-symbol-draw { color: var(--color-text-muted); font-weight: 600; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+        .score-label {
+            font-size: 1rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+        .label-x { color: var(--neon-cyan); text-shadow: 0 0 12px rgba(0,240,255,0.4); }
+        .label-o { color: var(--neon-pink); text-shadow: 0 0 12px rgba(255,0,85,0.4); }
+        .label-draw { font-size: 0.7rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.1em; }
 
-        .score-number {
-            font-size: 1.5rem;
-            font-weight: 600;
+        .score-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
         }
 
-        .score-divider {
-            width: 1px;
-            height: 32px;
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 999px;
+        .divider {
+            width: 2px;
+            height: 40px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.2), rgba(255,255,255,0));
         }
 
         /* --- INDICADOR DE TURNO --- */
-        .status-indicator {
-            padding: 6px 20px;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            font-weight: 500;
+        .turn-indicator {
+            padding: 12px 32px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
             transition: all 0.3s ease;
-        }
-        
-        .status-indicator.win-state {
-            transform: scale(1.05);
-            background: rgba(255, 255, 255, 0.2);
+            opacity: 0;
+            transform: translateY(-20px);
+            animation: slideDown 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards 0.3s;
         }
 
-        .turn-x { color: var(--color-x); font-weight: 700; font-size: 1rem; }
-        .turn-o { color: var(--color-o); font-weight: 700; font-size: 1rem; }
+        .turn-indicator span { font-weight: 800; font-size: 1.2rem; }
 
-        /* --- TABLERO --- */
+        /* --- TABLERO DE JUEGO --- */
         .board-wrapper {
+            position: relative;
             width: 100%;
-            max-width: 340px;
-            max-height: 45vh;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            max-width: 360px; /* Un poco más grande para llenar mejor los móviles actuales */
+            aspect-ratio: 1 / 1;
+            opacity: 0;
+            transform: scale(0.9);
+            animation: popIn 0.8s cubic-bezier(0.2, 1.2, 0.3, 1) forwards 0.4s;
         }
 
         .board {
             width: 100%;
-            aspect-ratio: 1 / 1;
+            height: 100%;
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(3, 1fr);
-            gap: 8px;
-            border-radius: 24px;
-            padding: 10px;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 36px;
         }
 
-        .board-cell {
+        .cell {
             position: relative;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .board-cell::before {
-            content: "";
-            display: block;
-            padding-top: 100%; /* Mantiene casillas cuadradas */
-        }
-
-        .board-cell:active {
-            transform: scale(0.95);
-        }
-        
-        .board-cell.filled {
             background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            /* Profundidad interna para las celdas vacías */
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.05);
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .board-cell svg {
+        .cell:active {
+            transform: scale(0.92);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* --- LÍNEA DE VICTORIA (MAGIA CSS) --- */
+        .win-line {
             position: absolute;
-            inset: 0;
-            margin: auto;
-            width: 60%;
-            height: 60%;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px white, 0 0 30px currentColor;
+            z-index: 20;
+            transform-origin: left center;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .win-line.active {
+            opacity: 1;
+            animation: drawLine 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        @keyframes drawLine {
+            0% { width: 0; }
+            100% { width: 90%; }
         }
 
         /* --- BOTÓN REINICIAR --- */
         .reset-btn {
-            flex-shrink: 0;
-            padding: 14px 32px;
-            border-radius: 9999px;
-            font-size: 0.9375rem; /* 15px */
-            font-weight: 600;
+            padding: 18px 40px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
             color: white;
-            border: none;
-            cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 16px;
-            transition: transform 0.2s ease;
+            gap: 12px;
+            cursor: pointer;
+            border: none;
+            outline: none;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards 0.5s;
         }
 
         .reset-btn:active {
-            transform: scale(0.95);
+            transform: scale(0.95) translateY(20px); /* Mantiene offset de animación */
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.3);
+            background: rgba(255,255,255,0.2);
         }
 
-        .reset-icon {
-            width: 16px;
-            height: 16px;
+        /* --- ANIMACIONES SVG DE DIBUJO --- */
+        /* Esta magia hace que parezca que las fichas se dibujan a mano */
+        .draw-path {
+            stroke-dasharray: 100;
+            stroke-dashoffset: 100;
+            animation: draw 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        
+        .draw-path.delay { animation-delay: 0.15s; }
+
+        @keyframes draw {
+            100% { stroke-dashoffset: 0; }
         }
 
-        /* --- ANIMACIONES --- */
-        @keyframes springPop {
-            0% { transform: scale(0.5); opacity: 0; }
-            50% { transform: scale(1.15); opacity: 1; }
-            100% { transform: scale(1); opacity: 1; }
+        /* --- ANIMACIONES DE ENTRADA --- */
+        @keyframes slideDown {
+            to { opacity: 1; transform: translateY(0); }
         }
+        @keyframes slideUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes popIn {
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        /* Destello al ganar */
+        .flash-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 100; opacity: 0; pointer-events: none;
+        }
+        .flash-overlay.active { animation: flash 0.8s ease-out; }
+        @keyframes flash { 0% { opacity: 0.6; } 100% { opacity: 0; } }
 
-        .animate-spring {
-            animation: springPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
-
-        @keyframes pulseSoft {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.03); opacity: 0.9; }
-        }
-
-        .animate-win {
-            animation: pulseSoft 1.5s ease-in-out infinite;
-            background: rgba(255, 255, 255, 0.3) !important;
-            border-color: rgba(255, 255, 255, 0.6) !important;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-        }
     </style>
 </head>
 <body>
-
-    <!-- Fondo Líquido -->
-    <div class="liquid-bg">
+    <!-- Fondo -->
+    <div class="plasma-bg">
         <div class="orb orb-1"></div>
         <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
     </div>
+    
+    <div id="flash" class="flash-overlay"></div>
 
     <!-- Contenedor Principal -->
-    <div class="container">
+    <div class="app-container">
         
-        <!-- Zona 1: Cabecera -->
+        <!-- Cabecera eliminada estructuralmente del render -->
         <div class="header">
-            <h1 class="title">Tres en Raya</h1>
-            <p class="subtitle">Liquid Glass</p>
         </div>
 
-        <!-- Zona 2: Marcador y Turno -->
-        <div class="score-section">
-            <div class="apple-glass score-board">
-                <div class="score-player">
-                    <span class="score-symbol-x">X</span>
-                    <span id="scoreX" class="score-number">0</span>
+        <!-- Panel de Estado -->
+        <div style="width: 100%; display: flex; flex-direction: column; align-items: center; gap: 24px;">
+            <div class="glass-panel score-board">
+                <div class="score-col">
+                    <span class="score-label label-x">X</span>
+                    <span id="scoreX" class="score-value">0</span>
                 </div>
-                <div class="score-divider"></div>
-                <div class="score-player">
-                    <span class="score-symbol-draw">Empate</span>
-                    <span id="scoreDraw" class="score-number" style="color: rgba(255,255,255,0.9);">0</span>
+                <div class="divider"></div>
+                <div class="score-col">
+                    <span class="score-label label-draw">Empate</span>
+                    <span id="scoreDraw" class="score-value" style="color: rgba(255,255,255,0.8);">0</span>
                 </div>
-                <div class="score-divider"></div>
-                <div class="score-player">
-                    <span class="score-symbol-o">O</span>
-                    <span id="scoreO" class="score-number">0</span>
+                <div class="divider"></div>
+                <div class="score-col">
+                    <span class="score-label label-o">O</span>
+                    <span id="scoreO" class="score-value">0</span>
                 </div>
             </div>
 
-            <div id="statusIndicator" class="apple-glass status-indicator">
-                Turno de <span id="turnText" class="turn-x">X</span>
+            <div id="statusIndicator" class="glass-panel turn-indicator">
+                Turno de <span id="turnText" class="label-x">X</span>
             </div>
         </div>
 
-        <!-- Zona 3: Tablero -->
+        <!-- Tablero -->
         <div class="board-wrapper">
-            <div id="board" class="apple-glass board">
-                <!-- Celdas generadas por JS -->
+            <div id="board" class="glass-panel board">
+                <!-- Celdas generadas vía JS -->
             </div>
+            <!-- Línea que cruza cuando hay victoria -->
+            <div id="winLine" class="win-line"></div>
         </div>
 
-        <!-- Zona 4: Botón Reiniciar -->
-        <button id="resetBtn" class="apple-glass reset-btn">
-            <svg class="reset-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+        <!-- Botón Reiniciar -->
+        <button id="resetBtn" class="glass-panel reset-btn">
+            <!-- Icono SVG en línea -->
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
             Reiniciar Partida
         </button>
 
     </div>
 
     <script>
-        // --- 1. SINTETIZADOR DE AUDIO ---
+        /* --- 1. SINTETIZADOR DE AUDIO HIFI --- */
         let audioCtx;
-
+        
         function initAudio() {
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -364,44 +383,63 @@
             }
         }
 
-        function playTone(freq, type, duration, vol = 0.05) {
+        // Generador de tonos complejo (emula campanas/notificaciones premium)
+        function playPremiumTone(freq1, freq2, type, duration, vol) {
             initAudio();
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
+            const osc1 = audioCtx.createOscillator();
+            const osc2 = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
             
-            oscillator.type = type;
-            oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            osc1.type = type;
+            osc2.type = 'sine'; // Añade redondez al sonido principal
             
-            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-            gainNode.gain.linearRampToValueAtTime(vol, audioCtx.currentTime + 0.02);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            osc1.frequency.setValueAtTime(freq1, audioCtx.currentTime);
+            osc2.frequency.setValueAtTime(freq2, audioCtx.currentTime);
             
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
+            // Envolvente de ataque rápido y decaimiento exponencial suave (estilo marimba/campana)
+            gain.gain.setValueAtTime(0, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(vol, audioCtx.currentTime + 0.015);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
             
-            oscillator.start();
-            oscillator.stop(audioCtx.currentTime + duration);
+            osc1.connect(gain);
+            osc2.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc1.start(); osc2.start();
+            osc1.stop(audioCtx.currentTime + duration);
+            osc2.stop(audioCtx.currentTime + duration);
         }
 
-        const sounds = {
-            placeX: () => playTone(880, 'sine', 0.15, 0.08), 
-            placeO: () => playTone(659.25, 'sine', 0.15, 0.08),
+        // Háptica (Vibración) si el móvil lo soporta
+        function vibrate(pattern) {
+            if (navigator.vibrate) { navigator.vibrate(pattern); }
+        }
+
+        const SFX = {
+            placeX: () => { playPremiumTone(880, 1760, 'sine', 0.3, 0.08); vibrate(15); },
+            placeO: () => { playPremiumTone(659.25, 1318.5, 'sine', 0.3, 0.08); vibrate(15); },
             win: () => {
-                playTone(523.25, 'sine', 0.1, 0.1); 
-                setTimeout(() => playTone(659.25, 'sine', 0.1, 0.1), 100); 
-                setTimeout(() => playTone(783.99, 'sine', 0.1, 0.1), 200); 
-                setTimeout(() => playTone(1046.50, 'sine', 0.4, 0.12), 300); 
+                // Arpegio victorioso
+                playPremiumTone(523.25, 1046.5, 'sine', 0.2, 0.1);
+                setTimeout(() => playPremiumTone(659.25, 1318.5, 'sine', 0.2, 0.1), 80);
+                setTimeout(() => playPremiumTone(783.99, 1568, 'sine', 0.2, 0.1), 160);
+                setTimeout(() => playPremiumTone(1046.50, 2093, 'sine', 0.8, 0.15), 240);
+                vibrate([30, 50, 30, 50, 80]);
             },
             draw: () => {
-                playTone(440, 'triangle', 0.2, 0.05);
-                setTimeout(() => playTone(415.30, 'triangle', 0.4, 0.05), 200);
+                playPremiumTone(349.23, 174.61, 'triangle', 0.3, 0.06);
+                setTimeout(() => playPremiumTone(329.63, 164.81, 'triangle', 0.5, 0.06), 200);
+                vibrate([40, 60, 40]);
             },
-            reset: () => playTone(1046.50, 'sine', 0.1, 0.05)
+            reset: () => { playPremiumTone(1046.50, 523.25, 'sine', 0.2, 0.05); vibrate(10); }
         };
 
-        // --- 2. LÓGICA DEL JUEGO ---
+        /* --- 2. LÓGICA Y RENDERIZADO DEL JUEGO --- */
         const boardElement = document.getElementById('board');
         const statusIndicator = document.getElementById('statusIndicator');
+        const turnText = document.getElementById('turnText');
+        const winLine = document.getElementById('winLine');
+        const flash = document.getElementById('flash');
         
         let board = Array(9).fill(null);
         let currentPlayer = 'X';
@@ -409,29 +447,37 @@
         let scores = { X: 0, O: 0, Draw: 0 };
 
         const WINNING_COMBINATIONS = [
-            [0, 1, 2], [3, 4, 5], [6, 7, 8],
-            [0, 3, 6], [1, 4, 7], [2, 5, 8],
-            [0, 4, 8], [2, 4, 6]
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Filas
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columnas
+            [0, 4, 8], [2, 4, 6]             // Diagonales
         ];
 
-        // SVGs adaptables
-        const iconX = `<svg class="animate-spring" style="color: var(--color-x); filter: drop-shadow(0px 2px 8px rgba(0,210,255,0.6));" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`;
-        const iconO = `<svg class="animate-spring" style="color: var(--color-o); filter: drop-shadow(0px 2px 8px rgba(255,0,127,0.6));" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>`;
+        // SVGs configurados para animarse dibujándose (stroke-dasharray)
+        const getIconX = () => `
+            <svg style="width:100%; height:100%; padding: 16%; filter: drop-shadow(0 0 12px rgba(0,240,255,0.6));" viewBox="0 0 100 100" fill="none" stroke="var(--neon-cyan)" stroke-width="12" stroke-linecap="round">
+                <path class="draw-path" d="M20 20 L80 80" />
+                <path class="draw-path delay" d="M80 20 L20 80" />
+            </svg>`;
+            
+        const getIconO = () => `
+            <svg style="width:100%; height:100%; padding: 16%; filter: drop-shadow(0 0 12px rgba(255,0,85,0.6));" viewBox="0 0 100 100" fill="none" stroke="var(--neon-pink)" stroke-width="12" stroke-linecap="round">
+                <circle class="draw-path" cx="50" cy="50" r="30" pathLength="100" />
+            </svg>`;
 
-        function initializeBoard() {
+        function initGame() {
             boardElement.innerHTML = '';
             board.forEach((_, index) => {
                 const cell = document.createElement('div');
-                cell.className = 'board-cell';
+                cell.className = 'cell';
                 cell.dataset.index = index;
-                
-                cell.addEventListener('pointerdown', handleCellClick);
+                // Usamos pointerdown (responde ultra rápido en móviles)
+                cell.addEventListener('pointerdown', handleMove);
                 boardElement.appendChild(cell);
             });
-            updateStatusDisplay();
+            updateStatus();
         }
 
-        function handleCellClick(e) {
+        function handleMove(e) {
             initAudio(); 
             const cell = e.currentTarget;
             const index = cell.dataset.index;
@@ -439,99 +485,136 @@
             if (board[index] || !gameActive) return;
 
             board[index] = currentPlayer;
-            cell.classList.add('filled');
             
             if (currentPlayer === 'X') {
-                cell.innerHTML += iconX;
-                sounds.placeX();
+                cell.innerHTML = getIconX();
+                SFX.placeX();
             } else {
-                cell.innerHTML += iconO;
-                sounds.placeO();
+                cell.innerHTML = getIconO();
+                SFX.placeO();
             }
 
-            checkResult();
+            checkOutcome();
         }
 
-        function checkResult() {
-            let roundWon = false;
-            let winningCells = [];
+        function checkOutcome() {
+            let won = false;
+            let winningLineIndex = -1;
 
             for (let i = 0; i < WINNING_COMBINATIONS.length; i++) {
                 const [a, b, c] = WINNING_COMBINATIONS[i];
                 if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-                    roundWon = true;
-                    winningCells = [a, b, c];
+                    won = true;
+                    winningLineIndex = i;
                     break;
                 }
             }
 
-            if (roundWon) {
-                handleWin(winningCells);
+            if (won) {
+                endGame(winningLineIndex);
                 return;
             }
 
             if (!board.includes(null)) {
-                handleDraw();
+                endGame(-1); // Empate
                 return;
             }
 
             currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-            updateStatusDisplay();
+            updateStatus();
         }
 
-        function handleWin(winningCells) {
+        function endGame(winningIndex) {
             gameActive = false;
-            sounds.win();
-            scores[currentPlayer]++;
-            document.getElementById(`score${currentPlayer}`).innerText = scores[currentPlayer];
-
-            const colorClass = currentPlayer === 'X' ? 'turn-x' : 'turn-o';
-            statusIndicator.innerHTML = `¡<span class="${colorClass}">${currentPlayer}</span> ha ganado! 🎉`;
-            statusIndicator.classList.add('win-state');
-
-            const cells = boardElement.children;
-            winningCells.forEach(index => {
-                cells[index].classList.add('animate-win');
-            });
             
-            Array.from(cells).forEach(cell => cell.style.pointerEvents = 'none');
-        }
+            if (winningIndex !== -1) {
+                // Victoria
+                SFX.win();
+                scores[currentPlayer]++;
+                document.getElementById(`score${currentPlayer}`).innerText = scores[currentPlayer];
+                
+                // Efecto destello de pantalla
+                flash.classList.add('active');
+                setTimeout(() => flash.classList.remove('active'), 800);
 
-        function handleDraw() {
-            gameActive = false;
-            sounds.draw();
-            scores.Draw++;
-            document.getElementById('scoreDraw').innerText = scores.Draw;
+                // Dibujar línea física sobre el tablero
+                drawWinningLine(winningIndex);
 
-            statusIndicator.innerHTML = "¡Es un empate! 🤝";
-            statusIndicator.classList.add('win-state');
-        }
-
-        function updateStatusDisplay() {
-            if (gameActive) {
-                const colorClass = currentPlayer === 'X' ? 'turn-x' : 'turn-o';
-                statusIndicator.innerHTML = `Turno de <span class="${colorClass}">${currentPlayer}</span>`;
-                statusIndicator.classList.remove('win-state');
+                turnText.innerText = currentPlayer;
+                turnText.className = currentPlayer === 'X' ? 'label-x' : 'label-o';
+                statusIndicator.innerHTML = `¡<span class="${turnText.className}">${currentPlayer}</span> GANA! 🏆`;
+                statusIndicator.style.background = 'rgba(255,255,255,0.2)';
+                statusIndicator.style.transform = 'scale(1.1)';
+            } else {
+                // Empate
+                SFX.draw();
+                scores.Draw++;
+                document.getElementById('scoreDraw').innerText = scores.Draw;
+                
+                statusIndicator.innerHTML = "EMPATE 🤝";
+                statusIndicator.style.background = 'rgba(255,255,255,0.1)';
             }
         }
 
+        // Posiciona y anima una barra física cruzando las casillas ganadoras
+        function drawWinningLine(index) {
+            // Posiciones relativas basadas en un grid 3x3 perfecto
+            const positions = [
+                { top: '16.6%', left: '5%', angle: 0 },    // Fila 1
+                { top: '50%', left: '5%', angle: 0 },      // Fila 2
+                { top: '83.3%', left: '5%', angle: 0 },    // Fila 3
+                { top: '5%', left: '16.6%', angle: 90 },   // Columna 1
+                { top: '5%', left: '50%', angle: 90 },     // Columna 2
+                { top: '5%', left: '83.3%', angle: 90 },   // Columna 3
+                { top: '5%', left: '5%', angle: 45 },      // Diagonal \
+                { top: '95%', left: '5%', angle: -45 }     // Diagonal /
+            ];
+
+            const cfg = positions[index];
+            const color = currentPlayer === 'X' ? 'var(--neon-cyan)' : 'var(--neon-pink)';
+            
+            winLine.style.top = cfg.top;
+            winLine.style.left = cfg.left;
+            winLine.style.transform = `translateY(-50%) rotate(${cfg.angle}deg)`;
+            winLine.style.height = '6px';
+            winLine.style.color = color; // Pasa el color al shadow via currentColor
+            winLine.style.background = '#fff';
+            
+            // Si es diagonal, la línea debe ser más larga (hipotenusa)
+            const length = index >= 6 ? '127%' : '90%';
+            
+            // Animación via Web Animations API dinámica
+            winLine.animate([
+                { width: '0px', opacity: 1 },
+                { width: length, opacity: 1 }
+            ], { duration: 400, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)', fill: 'forwards' });
+        }
+
+        function updateStatus() {
+            turnText.innerText = currentPlayer;
+            turnText.className = currentPlayer === 'X' ? 'label-x' : 'label-o';
+            statusIndicator.innerHTML = `Turno de <span id="turnText" class="${turnText.className}">${currentPlayer}</span>`;
+            statusIndicator.style.background = 'var(--glass-bg)';
+            statusIndicator.style.transform = 'scale(1)';
+        }
+
         document.getElementById('resetBtn').addEventListener('pointerdown', () => {
-            sounds.reset();
+            SFX.reset();
             board = Array(9).fill(null);
             currentPlayer = 'X';
             gameActive = true;
-            statusIndicator.classList.remove('win-state');
-            initializeBoard();
+            
+            // Resetear línea de victoria suavemente
+            const animation = winLine.animate([{ opacity: 0 }], { duration: 200, fill: 'forwards' });
+            animation.onfinish = () => { winLine.style.width = '0px'; };
+            
+            statusIndicator.style.transform = 'scale(1)';
+            initGame();
         });
 
-        // Inicializar
-        initializeBoard();
+        // Arrancar
+        initGame();
 
     </script>
-<script>
-if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("service-worker.js");
-}
-</script>
 </body>
 </html>
