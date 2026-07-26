@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Tres en Raya Liquid Glass (Offline)</title>
+    <style>
+        /* --- VARIABLES --- */
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            --color-x: #00d2ff;
+            --color-o: #ff007f;
+            --color-text: #ffffff;
+            --color-text-muted: rgba(255, 255, 255, 0.6);
+        }
+
+        /* --- RESET Y ESTRUCTURA BASE --- */
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            /* Usa las fuentes nativas de Apple (San Francisco) sin descargar nada */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            background-color: #050505;
+            color: var(--color-text);
+            touch-action: none;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* --- FONDO LÍQUIDO --- */
+        .liquid-bg {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0;
+            background: #0f0c29;
+            overflow: hidden;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.6;
+            animation: float 20s infinite ease-in-out alternate;
+        }
+
+        .orb-1 {
+            width: 70vw; height: 70vw; max-width: 300px; max-height: 300px;
+            background: var(--color-o);
+            top: -10%; left: -10%;
+        }
+
+        .orb-2 {
+            width: 80vw; height: 80vw; max-width: 350px; max-height: 350px;
+            background: var(--color-x);
+            bottom: -10%; right: -10%;
+            animation-delay: -5s;
+            animation-direction: alternate-reverse;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(15px, -25px) scale(1.05); }
+            100% { transform: translate(-15px, 15px) scale(0.95); }
+        }
+
+        /* --- LAYOUT PRINCIPAL --- */
+        .container {
+            width: 90vw;
+            max-width: 380px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-evenly;
+            position: relative;
+            z-index: 10;
+            padding: 24px 0;
+        }
+
+        /* --- UTILIDADES APPLE GLASS --- */
+        .apple-glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+        }
+
+        /* --- CABECERA --- */
+        .header {
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .title {
+            font-size: 1.875rem; /* 30px */
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            margin: 0 0 4px 0;
+            background: linear-gradient(135deg, #fff 0%, #b3b3b3 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--color-text-muted);
+            font-size: 0.75rem; /* 12px */
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        /* --- PANEL DE PUNTUACIÓN --- */
+        .score-section {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .score-board {
+            width: 100%;
+            border-radius: 24px;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .score-player {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 64px;
+        }
+
+        .score-symbol-x { color: var(--color-x); font-weight: 700; font-size: 1.125rem; margin-bottom: 2px; }
+        .score-symbol-o { color: var(--color-o); font-weight: 700; font-size: 1.125rem; margin-bottom: 2px; }
+        .score-symbol-draw { color: var(--color-text-muted); font-weight: 600; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+
+        .score-number {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .score-divider {
+            width: 1px;
+            height: 32px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 999px;
+        }
+
+        /* --- INDICADOR DE TURNO --- */
+        .status-indicator {
+            padding: 6px 20px;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .status-indicator.win-state {
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .turn-x { color: var(--color-x); font-weight: 700; font-size: 1rem; }
+        .turn-o { color: var(--color-o); font-weight: 700; font-size: 1rem; }
+
+        /* --- TABLERO --- */
+        .board-wrapper {
+            width: 100%;
+            max-width: 340px;
+            max-height: 45vh;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .board {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 8px;
+            border-radius: 24px;
+            padding: 10px;
+        }
+
+        .board-cell {
+            position: relative;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .board-cell::before {
+            content: "";
+            display: block;
+            padding-top: 100%; /* Mantiene casillas cuadradas */
+        }
+
+        .board-cell:active {
+            transform: scale(0.95);
+        }
+        
+        .board-cell.filled {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .board-cell svg {
+            position: absolute;
+            inset: 0;
+            margin: auto;
+            width: 60%;
+            height: 60%;
+        }
+
+        /* --- BOTÓN REINICIAR --- */
+        .reset-btn {
+            flex-shrink: 0;
+            padding: 14px 32px;
+            border-radius: 9999px;
+            font-size: 0.9375rem; /* 15px */
+            font-weight: 600;
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            transition: transform 0.2s ease;
+        }
+
+        .reset-btn:active {
+            transform: scale(0.95);
+        }
+
+        .reset-icon {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* --- ANIMACIONES --- */
+        @keyframes springPop {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.15); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .animate-spring {
+            animation: springPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes pulseSoft {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.03); opacity: 0.9; }
+        }
+
+        .animate-win {
+            animation: pulseSoft 1.5s ease-in-out infinite;
+            background: rgba(255, 255, 255, 0.3) !important;
+            border-color: rgba(255, 255, 255, 0.6) !important;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Fondo Líquido -->
+    <div class="liquid-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    <!-- Contenedor Principal -->
+    <div class="container">
+        
+        <!-- Zona 1: Cabecera -->
+        <div class="header">
+            <h1 class="title">Tres en Raya</h1>
+            <p class="subtitle">Liquid Glass</p>
+        </div>
+
+        <!-- Zona 2: Marcador y Turno -->
+        <div class="score-section">
+            <div class="apple-glass score-board">
+                <div class="score-player">
+                    <span class="score-symbol-x">X</span>
+                    <span id="scoreX" class="score-number">0</span>
+                </div>
+                <div class="score-divider"></div>
+                <div class="score-player">
+                    <span class="score-symbol-draw">Empate</span>
+                    <span id="scoreDraw" class="score-number" style="color: rgba(255,255,255,0.9);">0</span>
+                </div>
+                <div class="score-divider"></div>
+                <div class="score-player">
+                    <span class="score-symbol-o">O</span>
+                    <span id="scoreO" class="score-number">0</span>
+                </div>
+            </div>
+
+            <div id="statusIndicator" class="apple-glass status-indicator">
+                Turno de <span id="turnText" class="turn-x">X</span>
+            </div>
+        </div>
+
+        <!-- Zona 3: Tablero -->
+        <div class="board-wrapper">
+            <div id="board" class="apple-glass board">
+                <!-- Celdas generadas por JS -->
+            </div>
+        </div>
+
+        <!-- Zona 4: Botón Reiniciar -->
+        <button id="resetBtn" class="apple-glass reset-btn">
+            <svg class="reset-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            Reiniciar Partida
+        </button>
+
+    </div>
+
+    <script>
+        // --- 1. SINTETIZADOR DE AUDIO ---
+        let audioCtx;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playTone(freq, type, duration, vol = 0.05) {
+            initAudio();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.type = type;
+            oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(vol, audioCtx.currentTime + 0.02);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + duration);
+        }
+
+        const sounds = {
+            placeX: () => playTone(880, 'sine', 0.15, 0.08), 
+            placeO: () => playTone(659.25, 'sine', 0.15, 0.08),
+            win: () => {
+                playTone(523.25, 'sine', 0.1, 0.1); 
+                setTimeout(() => playTone(659.25, 'sine', 0.1, 0.1), 100); 
+                setTimeout(() => playTone(783.99, 'sine', 0.1, 0.1), 200); 
+                setTimeout(() => playTone(1046.50, 'sine', 0.4, 0.12), 300); 
+            },
+            draw: () => {
+                playTone(440, 'triangle', 0.2, 0.05);
+                setTimeout(() => playTone(415.30, 'triangle', 0.4, 0.05), 200);
+            },
+            reset: () => playTone(1046.50, 'sine', 0.1, 0.05)
+        };
+
+        // --- 2. LÓGICA DEL JUEGO ---
+        const boardElement = document.getElementById('board');
+        const statusIndicator = document.getElementById('statusIndicator');
+        
+        let board = Array(9).fill(null);
+        let currentPlayer = 'X';
+        let gameActive = true;
+        let scores = { X: 0, O: 0, Draw: 0 };
+
+        const WINNING_COMBINATIONS = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+            [0, 4, 8], [2, 4, 6]
+        ];
+
+        // SVGs adaptables
+        const iconX = `<svg class="animate-spring" style="color: var(--color-x); filter: drop-shadow(0px 2px 8px rgba(0,210,255,0.6));" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`;
+        const iconO = `<svg class="animate-spring" style="color: var(--color-o); filter: drop-shadow(0px 2px 8px rgba(255,0,127,0.6));" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>`;
+
+        function initializeBoard() {
+            boardElement.innerHTML = '';
+            board.forEach((_, index) => {
+                const cell = document.createElement('div');
+                cell.className = 'board-cell';
+                cell.dataset.index = index;
+                
+                cell.addEventListener('pointerdown', handleCellClick);
+                boardElement.appendChild(cell);
+            });
+            updateStatusDisplay();
+        }
+
+        function handleCellClick(e) {
+            initAudio(); 
+            const cell = e.currentTarget;
+            const index = cell.dataset.index;
+
+            if (board[index] || !gameActive) return;
+
+            board[index] = currentPlayer;
+            cell.classList.add('filled');
+            
+            if (currentPlayer === 'X') {
+                cell.innerHTML += iconX;
+                sounds.placeX();
+            } else {
+                cell.innerHTML += iconO;
+                sounds.placeO();
+            }
+
+            checkResult();
+        }
+
+        function checkResult() {
+            let roundWon = false;
+            let winningCells = [];
+
+            for (let i = 0; i < WINNING_COMBINATIONS.length; i++) {
+                const [a, b, c] = WINNING_COMBINATIONS[i];
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    roundWon = true;
+                    winningCells = [a, b, c];
+                    break;
+                }
+            }
+
+            if (roundWon) {
+                handleWin(winningCells);
+                return;
+            }
+
+            if (!board.includes(null)) {
+                handleDraw();
+                return;
+            }
+
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            updateStatusDisplay();
+        }
+
+        function handleWin(winningCells) {
+            gameActive = false;
+            sounds.win();
+            scores[currentPlayer]++;
+            document.getElementById(`score${currentPlayer}`).innerText = scores[currentPlayer];
+
+            const colorClass = currentPlayer === 'X' ? 'turn-x' : 'turn-o';
+            statusIndicator.innerHTML = `¡<span class="${colorClass}">${currentPlayer}</span> ha ganado! 🎉`;
+            statusIndicator.classList.add('win-state');
+
+            const cells = boardElement.children;
+            winningCells.forEach(index => {
+                cells[index].classList.add('animate-win');
+            });
+            
+            Array.from(cells).forEach(cell => cell.style.pointerEvents = 'none');
+        }
+
+        function handleDraw() {
+            gameActive = false;
+            sounds.draw();
+            scores.Draw++;
+            document.getElementById('scoreDraw').innerText = scores.Draw;
+
+            statusIndicator.innerHTML = "¡Es un empate! 🤝";
+            statusIndicator.classList.add('win-state');
+        }
+
+        function updateStatusDisplay() {
+            if (gameActive) {
+                const colorClass = currentPlayer === 'X' ? 'turn-x' : 'turn-o';
+                statusIndicator.innerHTML = `Turno de <span class="${colorClass}">${currentPlayer}</span>`;
+                statusIndicator.classList.remove('win-state');
+            }
+        }
+
+        document.getElementById('resetBtn').addEventListener('pointerdown', () => {
+            sounds.reset();
+            board = Array(9).fill(null);
+            currentPlayer = 'X';
+            gameActive = true;
+            statusIndicator.classList.remove('win-state');
+            initializeBoard();
+        });
+
+        // Inicializar
+        initializeBoard();
+
+    </script>
+<script>
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js");
+}
+</script>
+</body>
+</html>
